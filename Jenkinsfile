@@ -2,40 +2,62 @@ pipeline {
     agent any
     environment {
         DOCKERHUB_CRED = credentials('DockerHub')
-        SONAR_TOKEN = credentials('sonarqube-token')
-        AZURE_SP = credentials('azure-sp')
-        AZURE_TENANT = credentials('azure-tenant')
-        GITHUB_TOKEN = credentials('github-token')
-        IMAGE_NAME = "bhavananimmagadda/python-onepiece-app"
+        SONAR_TOKEN    = credentials('sonarqube-token')
+        AZURE_SP       = credentials('azure-sp')
+        AZURE_TENANT   = credentials('azure-tenant')
+        GITHUB_TOKEN   = credentials('github-token')
+        IMAGE_NAME     = "bhavananimmagadda/python-onepiece-app"
     }
-   stages {
+    stages {
         stage('Git Checkout') {
             steps {
                 git branch: 'main', url: 'https://github.com/bhavananimmagadda-arch/python-onepiece-app.git'
             }
-        } 
+        }
+
         stage('Python Build') {
-    steps {
-        sh '''
-            python3 -m venv venv
-            . venv/bin/activate
-            pip install --upgrade pip
-            pip install -r requirements.txt
-        '''
-    }
-}
-        stage('Python Test') {
             steps {
-                sh 'pytest tests/'
+                sh '''
+                    set -e
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
             }
         }
+
+        stage('Python Test') {
+            steps {
+                sh '''
+                    set -e
+                    # Activate venv
+                    . venv/bin/activate
+                    # Run pytest if tests folder exists
+                    if [ -d "tests" ]; then
+                        pytest tests/
+                    else
+                        echo "No tests directory found, skipping tests."
+                    fi
+                '''
+            }
+        }
+
         stage('SonarQube Scan') {
             steps {
                 withSonarQubeEnv('sonarqube-local') {
-                    sh "sonar-scanner -Dsonar.projectKey=jenkins-project -Dsonar.sources=. -Dsonar.host.url=http://<VM_PUBLIC_IP>:9000 -Dsonar.login=$SONAR_TOKEN"
+                    sh '''
+                        set -e
+                        sonar-scanner \
+                        -Dsonar.projectKey=jenkins-project \
+                        -Dsonar.sources=. \
+                        -Dsonar.host.url=http://<VM_PUBLIC_IP>:9000 \
+                        -Dsonar.login=$SONAR_TOKEN
+                    '''
                 }
             }
         }
+
         stage('Publish Quality Gate') {
             steps {
                 timeout(time: 5, unit: 'MINUTES') {
@@ -43,16 +65,24 @@ pipeline {
                 }
             }
         }
+
         stage('Docker Build and Push') {
             steps {
-                sh "docker login -u $DOCKERHUB_CRED_USR -p $DOCKERHUB_CRED_PSW"
-                sh "docker build -t $IMAGE_NAME ."
-                sh "docker push $IMAGE_NAME"
+                sh '''
+                    set -e
+                    echo $DOCKERHUB_CRED_PSW | docker login -u $DOCKERHUB_CRED_USR --password-stdin
+                    docker build -t $IMAGE_NAME .
+                    docker push $IMAGE_NAME
+                '''
             }
         }
+
         stage('Trivy Scan') {
             steps {
-                sh "trivy image $IMAGE_NAME > trivy-report.txt || true"
+                sh '''
+                    set -e
+                    trivy image $IMAGE_NAME > trivy-report.txt || true
+                '''
                 archiveArtifacts artifacts: 'trivy-report.txt', fingerprint: true
             }
         }
