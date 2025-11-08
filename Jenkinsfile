@@ -50,9 +50,7 @@ pipeline {
                         set -e
                         sonar-scanner \
                         -Dsonar.projectKey=jenkins-project \
-                        -Dsonar.sources=. \
-                        -Dsonar.host.url=http://40.90.226.18:9000 \
-                        -Dsonar.login=$SONAR_TOKEN
+                        -Dsonar.sources=. 
                     '''
                 }
             }
