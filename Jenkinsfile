@@ -5,12 +5,13 @@ pipeline {
         SONAR_TOKEN = credentials('sonarqube-token')
         AZURE_SP = credentials('azure-sp')
         AZURE_TENANT = credentials('azure-tenant')
+        GIT_CRED = credentials('GitHub-token')
         IMAGE_NAME = "your-dockerhub-username/python-onepiece-app"
     }
    stages {
         stage('Git Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/yourusername/your-repo.git'
+                git branch: 'main', url: 'https://github.com/bhavananimmagadda-arch/python-onepiece-app.git'
             }
         } 
         stage('Python Build') {
