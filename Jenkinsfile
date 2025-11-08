@@ -17,13 +17,9 @@ pipeline {
         stage('Python Build') {
     steps {
         sh '''
-            # Create a virtual environment
             python3 -m venv venv
-            # Activate the virtual environment
-            source venv/bin/activate
-            # Upgrade pip inside the venv
+            . venv/bin/activate
             pip install --upgrade pip
-            # Install required packages inside venv
             pip install -r requirements.txt
         '''
     }
