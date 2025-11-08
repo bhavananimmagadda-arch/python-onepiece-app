@@ -15,10 +15,19 @@ pipeline {
             }
         } 
         stage('Python Build') {
-            steps {
-                sh 'python3 -m pip install -r requirements.txt'
-            }
-        }
+    steps {
+        sh '''
+            # Create a virtual environment
+            python3 -m venv venv
+            # Activate the virtual environment
+            source venv/bin/activate
+            # Upgrade pip inside the venv
+            pip install --upgrade pip
+            # Install required packages inside venv
+            pip install -r requirements.txt
+        '''
+    }
+}
         stage('Python Test') {
             steps {
                 sh 'pytest tests/'
