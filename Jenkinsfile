@@ -5,7 +5,7 @@ pipeline {
         SONAR_TOKEN = credentials('sonarqube-token')
         AZURE_SP = credentials('azure-sp')
         AZURE_TENANT = credentials('azure-tenant')
-        GIT_CRED = credentials('GitHub-token')
+        GITHUB_TOKEN = credentials('github-token')
         IMAGE_NAME = "bhavananimmagadda/python-onepiece-app"
     }
    stages {
