@@ -6,7 +6,7 @@ pipeline {
         AZURE_SP = credentials('azure-sp')
         AZURE_TENANT = credentials('azure-tenant')
         GIT_CRED = credentials('GitHub-token')
-        IMAGE_NAME = "your-dockerhub-username/python-onepiece-app"
+        IMAGE_NAME = "bhavananimmagadda/python-onepiece-app"
     }
    stages {
         stage('Git Checkout') {
