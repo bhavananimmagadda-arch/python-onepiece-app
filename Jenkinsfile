@@ -55,6 +55,8 @@ stage('Publish Quality Gate') {
     steps {
         timeout(time: 15, unit: 'MINUTES') {
             script {
+                echo "Waiting 10 seconds for SonarQube to process the analysis..."
+                sleep 10
                 def qg = waitForQualityGate()
                 if (qg.status != 'OK') {
                     error "Pipeline aborted due to failed Quality Gate: ${qg.status}"
@@ -65,6 +67,7 @@ stage('Publish Quality Gate') {
         }
     }
 }
+
 
         stage('Docker Build and Push') {
             steps {
