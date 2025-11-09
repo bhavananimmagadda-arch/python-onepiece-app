@@ -43,15 +43,10 @@ pipeline {
             }
         }
 
-        stage('SonarQube Analysis') {
+        stage('SonarQube Scan') {
     steps {
-        withSonarQubeEnv('SonarScanner') {  // <- use your SonarScanner installation name
-            sh """
-                sonar-scanner \
-                    -Dsonar.projectKey=jenkins-project \
-                    -Dsonar.sources=. \
-                    -Dsonar.python.version=3.12
-            """
+        withSonarQubeEnv('sonarqube-local') {
+            sh "${tool 'SonarScanner'}/bin/sonar-scanner -Dsonar.projectKey=jenkins-project -Dsonar.sources=."
         }
     }
 }
