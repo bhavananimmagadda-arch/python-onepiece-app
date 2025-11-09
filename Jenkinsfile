@@ -44,17 +44,14 @@ pipeline {
         }
 
         stage('SonarQube Scan') {
-            steps {
-                withSonarQubeEnv('sonarqube-local') {
-                    sh '''
-                        set -e
-                        sonar-scanner \
-                        -Dsonar.projectKey=jenkins-project \
-                        -Dsonar.sources=. 
-                    '''
-                }
-            }
+    steps {
+        withSonarQubeEnv('sonarqube-local') {
+            // Use the scanner installed by Jenkins
+            sh "${tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'}/bin/sonar-scanner -Dsonar.projectKey=jenkins-project -Dsonar.sources=."
         }
+    }
+}
+
 
         stage('Publish Quality Gate') {
             steps {
