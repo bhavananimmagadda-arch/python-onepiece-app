@@ -43,23 +43,33 @@ pipeline {
             }
         }
 
-        stage('SonarQube Scan') {
+        stage('SonarQube Analysis') {
     steps {
-        withSonarQubeEnv('sonarqube-local') {
-            // Use the scanner installed by Jenkins
-            sh "${tool name: 'SonarScanner', type: 'hudson.plugins.sonar.SonarRunnerInstallation'}/bin/sonar-scanner -Dsonar.projectKey=jenkins-project -Dsonar.sources=."
+        withSonarQubeEnv('SonarScanner') {  // <- use your SonarScanner installation name
+            sh """
+                sonar-scanner \
+                    -Dsonar.projectKey=jenkins-project \
+                    -Dsonar.sources=. \
+                    -Dsonar.python.version=3.12
+            """
         }
     }
 }
 
-
-        stage('Publish Quality Gate') {
-            steps {
-                timeout(time: 10, unit: 'MINUTES') {
-                    waitForQualityGate abortPipeline: true
+stage('Publish Quality Gate') {
+    steps {
+        timeout(time: 15, unit: 'MINUTES') {
+            script {
+                def qg = waitForQualityGate()
+                if (qg.status != 'OK') {
+                    error "Pipeline aborted due to failed Quality Gate: ${qg.status}"
+                } else {
+                    echo "Quality Gate passed: ${qg.status}"
                 }
             }
         }
+    }
+}
 
         stage('Docker Build and Push') {
             steps {
